@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const Users = require("../auth/auth-model");
-const secrets = require("../config/secrets");
+// const secrets = require("../config/secrets");
 
 router.post("/register", (req, res) => {
   // implement registration
@@ -29,7 +29,7 @@ router.post("/login", (req, res) => {
 
   let { username, password } = req.body;
 
-  Users.findBy({ username })
+  Users.findBy({ username: username })
     .first()
     .then((user) => {
       if (user && bcrypt.compareSync(password, user.password)) {
@@ -44,8 +44,8 @@ router.post("/login", (req, res) => {
         res.status(401).json({ errorMessage: "Invalid credentials" });
       }
     })
-    .catch((err) => {
-      res.status(500).json(err);
+    .catch(({err, name, message, stack, code}) => {
+      res.status(500).json({err, name, message, stack, code});
     });
 });
 
@@ -58,7 +58,7 @@ function generateToken(user) {
   const options = {
     expiresIn: "8h",
   };
-  return jwt.sign(payload, secrets.jwtSecret, options);
+  return jwt.sign(payload, "keepitsecret", options);
 }
 
 router.get("/logout", (req, res) => {
